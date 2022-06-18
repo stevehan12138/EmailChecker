@@ -43,16 +43,20 @@ export const Unverify: Command = {
             return;
         }
 
+        try {
+            const role = interaction.guild?.roles.cache.find(r => r.name === "verified") as Role;
+            await interaction.guild?.members.cache.get(user.id)?.roles.remove(role)
+        } catch (e) {
+            await interaction.followUp({ content: "error editing roles. make sure EmailChecker role is above verified role." });
+            return
+        }
+
         await updateDoc(serverRef, {
             [`users.${user.id}`] : {
                 verified: false,
                 email: data.email,
             }
         });
-
-        const role = interaction.guild?.roles.cache.find(r => r.name === "verified") as Role;
-        await interaction.guild?.members.cache.get(user.id)?.roles.remove(role);
-
 
         const startEmbed = new MessageEmbed()
             .setColor('#0099ff')

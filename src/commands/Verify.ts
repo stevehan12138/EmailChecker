@@ -49,16 +49,20 @@ export const Verify: Command = {
             .setTitle('Verify')
             .setTimestamp()
         if (data.code === code) {
-            startEmbed.setDescription(`You have verified your account with email ${data.email}.`)
+            try {
+                const role = interaction.guild?.roles.cache.find(r => r.name === "verified") as Role;
+                await interaction.guild?.members.cache.get(interaction.user.id)?.roles.add(role)
+            } catch (e) {
+                await interaction.followUp({ content: "error editing roles. make sure EmailChecker role is above verified role." });
+                return
+            }
             await updateDoc(serverRef, {
                 [`users.${interaction.user.id}`] : {
                     email: data.email,
                     verified: true
                 }
-            });
-            const role = interaction.guild?.roles.cache.find(r => r.name === "verified") as Role;
-            await interaction.guild?.members.cache.get(interaction.user.id)?.roles.add(role);
-            
+            }); 
+            startEmbed.setDescription(`You have verified your account with email ${data.email}.`)    
         } else {
             startEmbed.setDescription(`The code you entered is incorrect.`)
         }
